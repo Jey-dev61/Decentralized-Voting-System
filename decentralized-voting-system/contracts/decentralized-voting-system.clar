@@ -38,3 +38,34 @@
   { poll-id: uint }
   { voters: (list 100 principal) }
 )
+
+;; Public functions
+
+;; Create a new poll with expiration time (in blocks)
+(define-public (create-poll (question (string-ascii 100)) (duration uint))
+  (begin
+    (asserts! (> duration u0) ERR_INVALID_DURATION)
+    (let ((poll-id (var-get poll-counter))
+          (current-height block-height)
+          (expiry-height (+ block-height duration)))
+      (begin
+        (map-insert polls 
+          { poll-id: poll-id } 
+          { 
+            question: question, 
+            yes-votes: u0, 
+            no-votes: u0, 
+            owner: tx-sender,
+            is-active: true,
+            created-at: current-height,
+            expires-at: expiry-height,
+            total-voters: u0
+          }
+        )
+        (map-insert poll-voters { poll-id: poll-id } { voters: (list) })
+        (var-set poll-counter (+ poll-id u1))
+        (ok poll-id)
+      )
+    )
+  )
+)
