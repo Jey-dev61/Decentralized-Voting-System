@@ -144,7 +144,7 @@
 )
 
 ;; Emergency close all polls (contract owner only)
-(define-public (emergency-close-all))
+(define-public (emergency-close-all)
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_NOT_AUTHORIZED)
     ;; This would need to be implemented with a helper function in practice
@@ -161,12 +161,12 @@
 )
 
 ;; Get total number of polls created
-(define-read-only (get-total-polls))
+(define-read-only (get-total-polls)
   (var-get poll-counter)
 )
 
 ;; Get contract owner
-(define-read-only (get-contract-owner))
+(define-read-only (get-contract-owner)
   (var-get contract-owner)
 )
 
