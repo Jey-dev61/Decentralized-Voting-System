@@ -178,3 +178,28 @@
   )
 )
 
+;; Get poll with status information
+(define-read-only (get-poll-status (poll-id uint))
+  (match (map-get? polls { poll-id: poll-id })
+    poll (let ((current-height block-height)
+               (is-expired (> current-height (get expires-at poll)))
+               (is-active (and (get is-active poll) (not is-expired))))
+           (ok {
+             poll: poll,
+             is-expired: is-expired,
+             is-currently-active: is-active,
+             blocks-remaining: (if is-expired u0 (- (get expires-at poll) current-height))
+           }))
+    ERR_POLL_NOT_FOUND
+  )
+)
+
+;; Check if poll is active (not closed and not expired)
+(define-read-only (is-poll-active (poll-id uint))
+  (match (map-get? polls { poll-id: poll-id })
+    poll (and 
+           (get is-active poll) 
+           (<= block-height (get expires-at poll)))
+    false
+  )
+)
