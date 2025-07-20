@@ -9,3 +9,7 @@
 (define-constant ERR_POLL_EXPIRED (err u105))
 (define-constant ERR_INVALID_DURATION (err u106))
 (define-constant ERR_POLL_STILL_ACTIVE (err u107))
+
+;; Data variables
+(define-data-var poll-counter uint u0)
+(define-data-var contract-owner principal tx-sender)
