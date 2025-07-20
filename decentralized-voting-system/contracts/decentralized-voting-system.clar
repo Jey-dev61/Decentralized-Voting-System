@@ -218,3 +218,33 @@
 (define-read-only (get-poll-voters (poll-id uint))
   (default-to (list) (get voters (map-get? poll-voters { poll-id: poll-id })))
 )
+
+;; Get poll results with percentages
+(define-read-only (get-poll-results (poll-id uint))
+  (match (map-get? polls { poll-id: poll-id })
+    poll (let ((total-votes (+ (get yes-votes poll) (get no-votes poll))))
+           (if (> total-votes u0)
+             (ok {
+               poll-id: poll-id,
+               question: (get question poll),
+               yes-votes: (get yes-votes poll),
+               no-votes: (get no-votes poll),
+               total-votes: total-votes,
+               yes-percentage: (/ (* (get yes-votes poll) u100) total-votes),
+               no-percentage: (/ (* (get no-votes poll) u100) total-votes),
+               is-active: (get is-active poll)
+             })
+             (ok {
+               poll-id: poll-id,
+               question: (get question poll),
+               yes-votes: u0,
+               no-votes: u0,
+               total-votes: u0,
+               yes-percentage: u0,
+               no-percentage: u0,
+               is-active: (get is-active poll)
+             })
+           ))
+    ERR_POLL_NOT_FOUND
+  )
+)
