@@ -152,3 +152,29 @@
     (ok true)
   )
 )
+
+;; Read-only functions
+
+;; Get poll details
+(define-read-only (get-poll (poll-id uint))
+  (map-get? polls { poll-id: poll-id })
+)
+
+;; Get total number of polls created
+(define-read-only (get-total-polls))
+  (var-get poll-counter)
+)
+
+;; Get contract owner
+(define-read-only (get-contract-owner))
+  (var-get contract-owner)
+)
+
+;; Get polls by owner (helper function - would need additional implementation for full functionality)
+(define-read-only (get-poll-owner (poll-id uint))
+  (match (map-get? polls { poll-id: poll-id })
+    poll (some (get owner poll))
+    none
+  )
+)
+
