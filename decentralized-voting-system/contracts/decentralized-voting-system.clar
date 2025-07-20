@@ -45,9 +45,9 @@
 (define-public (create-poll (question (string-ascii 100)) (duration uint))
   (begin
     (asserts! (> duration u0) ERR_INVALID_DURATION)
-    (let ((poll-id (var-get poll-counter))
-          (current-height block-height)
-          (expiry-height (+ block-height duration)))
+            (let ((poll-id (var-get poll-counter))
+          (current-height stacks-block-height)
+          (expiry-height (+ stacks-block-height duration)))
       (begin
         (map-insert polls 
           { poll-id: poll-id } 
@@ -73,7 +73,7 @@
 ;; Vote on a poll
 (define-public (vote (poll-id uint) (is-yes bool))
   (let ((poll (unwrap! (map-get? polls { poll-id: poll-id }) ERR_INVALID_POLL))
-        (current-height block-height))
+        (current-height stacks-block-height))
     (begin
       ;; Check if poll is still active
       (asserts! (get is-active poll) ERR_POLL_CLOSED)
@@ -181,7 +181,7 @@
 ;; Get poll with status information
 (define-read-only (get-poll-status (poll-id uint))
   (match (map-get? polls { poll-id: poll-id })
-    poll (let ((current-height block-height)
+    poll (let ((current-height stacks-block-height)
                (is-expired (> current-height (get expires-at poll)))
                (is-active (and (get is-active poll) (not is-expired))))
            (ok {
@@ -199,7 +199,7 @@
   (match (map-get? polls { poll-id: poll-id })
     poll (and 
            (get is-active poll) 
-           (<= block-height (get expires-at poll)))
+           (<= stacks-block-height (get expires-at poll)))
     false
   )
 )
