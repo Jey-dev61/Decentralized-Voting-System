@@ -203,3 +203,18 @@
     false
   )
 )
+
+;; Check if user has voted on a poll
+(define-read-only (has-voted (poll-id uint) (user principal))
+  (is-some (map-get? votes { poll-id: poll-id, voter: user }))
+)
+
+;; Get user's vote on a poll
+(define-read-only (get-user-vote (poll-id uint) (user principal))
+  (map-get? votes { poll-id: poll-id, voter: user })
+)
+
+;; Get all voters for a poll (up to 100)
+(define-read-only (get-poll-voters (poll-id uint))
+  (default-to (list) (get voters (map-get? poll-voters { poll-id: poll-id })))
+)
