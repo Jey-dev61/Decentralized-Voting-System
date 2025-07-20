@@ -13,3 +13,28 @@
 ;; Data variables
 (define-data-var poll-counter uint u0)
 (define-data-var contract-owner principal tx-sender)
+
+;; Data maps
+(define-map polls 
+  { poll-id: uint } 
+  { 
+    question: (string-ascii 100), 
+    yes-votes: uint, 
+    no-votes: uint, 
+    owner: principal,
+    is-active: bool,
+    created-at: uint,
+    expires-at: uint,
+    total-voters: uint
+  }
+)
+
+(define-map votes 
+  { poll-id: uint, voter: principal } 
+  { voted: bool, vote-choice: bool, voted-at: uint }
+)
+
+(define-map poll-voters
+  { poll-id: uint }
+  { voters: (list 100 principal) }
+)
