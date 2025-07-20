@@ -69,3 +69,48 @@
     )
   )
 )
+
+;; Vote on a poll
+(define-public (vote (poll-id uint) (is-yes bool))
+  (let ((poll (unwrap! (map-get? polls { poll-id: poll-id }) ERR_INVALID_POLL))
+        (current-height block-height))
+    (begin
+      ;; Check if poll is still active
+      (asserts! (get is-active poll) ERR_POLL_CLOSED)
+      ;; Check if poll hasn't expired
+      (asserts! (<= current-height (get expires-at poll)) ERR_POLL_EXPIRED)
+      ;; Check if user hasn't voted already
+      (asserts! (is-none (map-get? votes { poll-id: poll-id, voter: tx-sender })) ERR_ALREADY_VOTED)
+      
+      ;; Record the vote
+      (map-insert votes 
+        { poll-id: poll-id, voter: tx-sender } 
+        { voted: true, vote-choice: is-yes, voted-at: current-height }
+      )
+      
+      ;; Update poll vote counts and voter list
+      (let ((updated-voters (unwrap-panic (as-max-len? 
+                              (append (default-to (list) (get voters (map-get? poll-voters { poll-id: poll-id }))) tx-sender) 
+                              u100))))
+        (map-set poll-voters { poll-id: poll-id } { voters: updated-voters })
+        (if is-yes
+          (map-set polls 
+            { poll-id: poll-id } 
+            (merge poll { 
+              yes-votes: (+ (get yes-votes poll) u1),
+              total-voters: (+ (get total-voters poll) u1)
+            })
+          )
+          (map-set polls 
+            { poll-id: poll-id } 
+            (merge poll { 
+              no-votes: (+ (get no-votes poll) u1),
+              total-voters: (+ (get total-voters poll) u1)
+            })
+          )
+        )
+      )
+      (ok true)
+    )
+  )
+)
