@@ -114,3 +114,41 @@
     )
   )
 )
+
+;; Close a poll (only owner can close)
+(define-public (close-poll (poll-id uint))
+  (let ((poll (unwrap! (map-get? polls { poll-id: poll-id }) ERR_INVALID_POLL)))
+    (begin
+      (asserts! (is-eq tx-sender (get owner poll)) ERR_NOT_AUTHORIZED)
+      (asserts! (get is-active poll) ERR_POLL_CLOSED)
+      (map-set polls 
+        { poll-id: poll-id } 
+        (merge poll { is-active: false })
+      )
+      (ok true)
+    )
+  )
+)
+
+;; Delete a poll (only owner can delete, and only if no votes)
+(define-public (delete-poll (poll-id uint))
+  (let ((poll (unwrap! (map-get? polls { poll-id: poll-id }) ERR_INVALID_POLL)))
+    (begin
+      (asserts! (is-eq tx-sender (get owner poll)) ERR_NOT_AUTHORIZED)
+      (asserts! (is-eq (get total-voters poll) u0) ERR_NOT_AUTHORIZED)
+      (map-delete polls { poll-id: poll-id })
+      (map-delete poll-voters { poll-id: poll-id })
+      (ok true)
+    )
+  )
+)
+
+;; Emergency close all polls (contract owner only)
+(define-public (emergency-close-all))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_NOT_AUTHORIZED)
+    ;; This would need to be implemented with a helper function in practice
+    ;; to iterate through all polls
+    (ok true)
+  )
+)
